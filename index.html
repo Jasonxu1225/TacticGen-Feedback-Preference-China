@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TacTGen – Feedback Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    html { font-size: 18px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 15px 30px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .comparison-row { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
+    .media-col     { display:flex; flex-direction:column; align-items:center; gap:10px; width:45%; }
+    .media-col video,
+    .media-col embed { width:100%; border:2px solid #ccc; border-radius:6px; }
+    .feedback-inline { display:flex; flex-direction:column; align-items:center; gap:10px; width:1000px; margin-bottom:5px; }
+    .feedback-inline .feedback-prompt { font-size:1.5em; font-weight:500; text-align:center; }
+    .feedback-inline .choices { display:flex; gap:20px; justify-content:center; align-items:center; }
+    .feedback-inline .choice  { font-size:1.2em; display:flex; align-items:center; }
+    .feedback-inline .choice input { transform:scale(1.3); margin-right:6px; }
+    .confidence-box { font-size:1.1em; display:inline-flex; align-items:center; gap:6px; }
+    .confidence-box input { width:120px; margin-left:6px; }
+    .event-name { font-size:1.6em; margin-top:6px; margin-bottom:-6px; font-weight:500; }
+    .nav-buttons { display:flex; gap:10px; margin-top:-5px; }
+    .nav-buttons button { padding:6px 15px; font-size:1.1em; background:#4caf50; color:#fff; border:none; border-radius:6px; cursor:pointer; transition:background .3s; }
+    .nav-buttons button:hover    { background:#45a049; }
+    .nav-buttons button:disabled { background:#ccc; cursor:not-allowed; }
+    #submit-btn { padding:5px 30px; font-size:1.5em; background:orangered; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-top:-5px; display:none; }
+    #submit-btn:hover { background:red; }
+    input[type=text] { width:100%; padding:10px; font-size:1.1em; border:1px solid #ccc; border-radius:4px; }
+    .asterisk { color:red; margin-left:2px; }
+  </style>
+</head>
+<body>
+
+<!-- PAGE 1 – PERSONAL INFO -->
+<div class="comparison-page" id="page1">
+  <div class="comparison-row">
+    <div class="feedback-inline">
+      <div class="feedback-prompt" style="margin:20px 0;font-size:38px;">
+        Tell us a bit about yourself<span class="asterisk">*</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:15px;width:100%;max-width:400px;margin-bottom:10px">
+        <input id="userName"     type="text" placeholder="Name*">
+        <input id="affiliation"  type="text" placeholder="Affiliation*">
+        <input id="position"     type="text" placeholder="Position*">
+        <input id="expertise"    type="text" placeholder="Experience or expertise in football*">
+        <input id="comments"     type="text" placeholder="Other comments">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 – DESCRIPTION -->
+<div class="comparison-page" id="page2" style="display:none;">
+  <!-- ======== TASK DESCRIPTION (place inside page2) ======== -->
+  <div class="task-description" style="max-width:800px;margin:0 auto;line-height:1.4;">
+    <h2 style="margin-top:0;">Task overview</h2>
+    <p>You will watch a set of short football videos. Each video follows the same pattern:</p>
+
+    <ol style="padding-left:1.2em;">
+      <li><strong>Event context (10 frames)</strong> – real tracking data showing the ball and all 22 players’ <span style="font-style:italic;">x / y</span> positions for the 10 frames immediately before the on-ball event (pass, clearance, ball-touch, etc.).</li>
+      <li><strong>Post-event segment (<em>N</em> frames)</strong> – after the event occurs, the video continues to track the ball and all players until one of the following conditions is met: the next on-ball action occurs, the tracking data is completed, or the 64-frame limit is reached. The ball trajectory is always authentic, while the trajectories of the 22 players from two teams may either be derived from <strong>real tracking data</strong> or generated through <strong>AI adjustments to optimize the movement of one team (with the other team’s movements fixed to real tracking data)</strong>.</li>
+      <li><strong>Freeze frame</strong> – the final frame is held for ~3 s to let you inspect the ending.</li>
+    </ol>
+
+    <h3 style="margin-bottom:0.3em;">Additional notes</h3>
+    <ul style="padding-left:1.2em;">
+      <li>The attacking team always moves <strong>left&nbsp;→&nbsp;right</strong>.</li>
+      <li><strong>Sampling rate:</strong> player tracking is captured at 10 Hz, and videos are rendered at 5 fps, so <em>1 s of video equals 0.5 s of real-world play</em>.</li>
+      <li>The <strong>ball trajectory is always real</strong>. In some cases, there may be some disturbances of the ball due to data inaccuracies; please disregard these when making your assessment.</li>
+      <li>There are around <strong>50 pairs of clips</strong> shown in a random order (fixed seed).</li>
+      <li>We provide five clips from real tracking data to get you familiar with the animations here: <a href="https://drive.google.com/drive/folders/1gh5ASZhNjMZCnbaJyELWEDJHBkwrJZKJ?usp=sharing" target="_blank">Google Drive Folder</a>.</li>
+    </ul>
+
+    <h3 style="margin-bottom:0.3em;">Your task</h3>
+    <p>For each pair of videos, determine which clip of the <strong>post-event player movements for a given team (<span style="color:red;">attacking</span> or <span style="color:blue;">defending</span>)</strong> demonstrates <strong>better tactics and positioning strategy</strong>. Pleaset take <i>realism</i> as a <strong>least</strong> consideration in this task.</p>
+    <h3 style="margin-bottom:0.3em;">PS</h3>
+    <li>You may submit your responses after completing at least one comparison. Clicking the Submit button will record all of your already selected answers to the server at once. For convenience, you might choose to submit your responses every 5 or 10 events.</li>
+    <li>If you'd like to take a break and continue later, you're also welcome to temporarily submit your progress. For example, if you complete and submit feedback for the first 10 videos, you can return later and resume directly from page 11.</li>
+    <li>When clicking the submit button, it will require you to provide some simple feedback during your annotation progress.</li>
+  </div>
+</div>
+
+<!-- VIDEO PAGES -->
+<div id="videoPagesContainer"></div>
+
+<!-- NAVIGATION -->
+<div class="nav-buttons">
+  <button id="previous-btn" onclick="changePage(-1)">Last Page</button>
+  <button id="next-btn"     onclick="changePage(1)">Next Page</button>
+  <input  id="page-number-input" type="number" style="width:80px" placeholder="Page #">
+  <button id="go-to-page-btn" onclick="goToPage()">Go</button>
+  <span  id="page-display" style="font-size:1.1em;font-weight:500;margin-left:8px;margin-top:5px;"></span>
+</div>
+
+<!-- SUBMIT -->
+<button id="submit-btn" onclick="submitFeedback()">Submit Feedback</button>
+
+<!-- RATIONALE DIALOG -->
+<div id="rationaleDialog" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0008;z-index:1000;">
+  <div style="background:#fff;padding:24px 22px;width:90%;max-width:480px;border-radius:8px;box-shadow:0 4px 18px #0004;">
+    <h3 style="margin-top:0;">How did you make your decision?</h3>
+    <p style="font-size:0.95em;margin-bottom:8px;">
+      Please summarize the main cues you relied on to select the clip with better tactics and positioning strategy.
+    </p>
+    <textarea id="rationaleText" rows="6" style="width:100%;"></textarea>
+    <div style="margin-top:18px;text-align:right;">
+      <button onclick="closeDialog(false)" style="margin-right:8px;">Cancel</button>
+      <button onclick="closeDialog(true)" style="background:#4caf50;color:#fff;">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 1. DEFINE EVENTS */
+// const attguideDirs = [
+//   'Ball touch_2128518_105064_43','Pass_2367823_44626_54','Ball touch_2128618_56906_50','Pass_2367830_100868_45',
+//   'Ball touch_986569_1350468_46','Pass_2367840_134407_59','Clearance_986528_1819549_47','Pass_2367846_104019_53',
+//   'Clearance_986530_1981338_40','Pass_2367846_4351_55','Dispossessed_986548_1888992_40','Pass_986528_1816044_46',
+//   'Interception_986540_1814223_33','Interception_986563_1765180_38','Pass_986528_1859894_40',
+//   'Pass_2128298_127866_52','Pass_986528_1904604_47','Pass_2128318_45728_60','Pass_986530_1984196_40',
+//   'Pass_2367815_124690_41','Pass_986531_1884385_47','Pass_2367816_81927_46','Pass_986538_1769077_51',
+//   'Pass_2367817_36051_35','Tackle_2367901_10878_44','Pass_2367820_97446_37','Pass_986528_1852334_64',
+// ];
+// const defguideDirs = [
+//   'Ball touch_2128518_105064_43','Pass_2367824_36538_38','Ball touch_986530_1897165_39','Pass_2367829_84789_40',
+//   'Challenge_986530_1986523_38','Pass_2367832_97041_42','Clearance_986553_1676393_54','Pass_2367840_134407_59',
+//   'Clearance_986559_1859953_40','Pass_2367846_104019_53','Clearance_986560_1890549_61','Pass_986528_1843954_52',
+//   'Interception_1059787_48778_55','Pass_986528_1904604_47','Interception_986530_2019911_37','Pass_986529_1830605_39',
+//   'Interception_986564_1437186_35','Pass_986534_1405258_64','Pass_2128318_45728_60','Pass_986540_1781405_61',
+//   'Pass_2367820_97446_37','Pass_986546_1806631_55','Pass_2367824_117175_46','Tackle_2367821_10998_52','Pass_2367824_35723_40',
+//   'Take On_2367816_121522_51'
+// ];
+const attguideDirs = [
+  // 'Attempt_2367650_132184_68629b92-26d3-4997-afd6-69d7520e2e11_5461',
+  'Ball recovery_2370710_142961_a0482111-c96d-430e-8e6c-f099872aae93_5963.864',
+  'Pass_2367548_426_14b2e43a-fb44-49dd-b87c-11f69c5ad751_66.9336015625',
+  'Pass_2367635_58331_50d7c5d9-35fa-417e-9941-87cf04abed74_2447.2805',
+  'Pass_2367650_132132_68629b92-26d3-4997-afd6-69d7520e2e11_5461',
+  // 'Pass_2367729_26523_ea9ebcb3-74b9-44a5-94df-fc67ce038637_1171.40475',
+  // 'Pass_2367830_117893_3d33358d-8edb-4e07-b70c-bbfa7b662b7a_4870.904',
+  'Pass_2367844_52638_dbdb77b6-7e4b-4613-bf03-c09fa756f5e4_2175.27525',
+  // 'Pass_2370815_12021_df707fd9-ca1d-40a9-a52b-68781ac8e371_526.2949375',
+  'Pass_2370870_101489_8bf37ee1-898d-44e9-a538-c04342bf8ef4_4297',
+  'Pass_2370982_20781_ffd0e150-aea4-423b-973d-01339f46062f_835.4',
+  'Pass_2450301_144560_f8a9ca28-64dc-4f06-a8f6-cee3aa7afa87_5875.731',
+  // 'Pass_2450451_126832_2b6e14fa-9ad3-4eca-bf2e-012a7e81c57f_5357',
+  'Pass_2450488_130479_de19354a-7326-4e84-8d8f-d298f9067d9f_5306'
+];
+const defguideDirs = [
+  'Ball recovery_2367722_121358_daf9b0ef-5ca3-4302-a761-41aaa969fe85_4989.9585',
+  'Ball recovery_2371044_137383_e31a910c-73f1-4f06-985b-ba6847186952_5508.53',
+  'Clearance_2450444_68726_a14686ec-0cbd-4c7c-899b-455e37ccb755_3010',
+  'Pass_2367547_79086_43bc285f-6695-451a-b681-1c1a34c4a580_3305.20525',
+  // 'Pass_2367561_92925_a8fc11b9-23ad-4afe-9fbd-347765bacbeb_3850.01675',
+  'Pass_2367592_121373_99cf83a9-589a-489a-8a8b-65d1838d0b12_5089.556',
+  'Pass_2367605_27626_0e70fb96-91b5-4486-a4e5-ce5034949ee0_1165.8325',
+  'Pass_2367617_9853_39b0f345-eaf4-427e-beec-9c461ada658c_574.40775',
+  // 'Pass_2367627_142231_d851e572-cb0f-4697-ba3c-d75c5084f525_5791.827',
+  'Pass_2367731_148399_dae0f7d5-5b67-4b41-ab85-f14797d45107_6072.339',
+  'Pass_2367751_16018_9e8c107e-3358-486b-8a49-7ecb9b069705_834.701375',
+  'Pass_2367762_104960_29650769-ab58-4cbe-b02f-f3a5d8e82a0a_4381.5815',
+  'Pass_2367781_146072_9a89a462-41ce-4704-abe0-1312a6467418_6034.0675',
+  'Pass_2367824_24038_4a183284-c099-4262-8534-bc681b407821_968.969',
+  'Pass_2367830_43198_3d33358d-8edb-4e07-b70c-bbfa7b662b7a_1819.185875',
+  'Pass_2367917_129474_3361b3bf-ce3d-40d1-a917-eb03796b14f9_5419.0525',
+  'Pass_2370759_56976_71fc8870-efdb-4925-b854-454687da3586_2280.619',
+  'Pass_2370831_36826_d8d60583-e020-4f08-bbf2-a9ef0a938a23_1480.4565',
+  'Pass_2371026_123752_38071a03-270f-486b-9f9e-eaaeb2a13e44_5192.2255',
+  'Pass_2450332_88136_121c6021-b618-4c17-8ea0-650292fd50a2_3601.668'
+];
+
+const guideDirs = [...attguideDirs, ...defguideDirs];
+
+const eventOf = f => {
+  const [event, gameId, frameId, link1, link2] = f.split('_');
+  const url = `https://epitome-staging.pff.com/en/film_room/${link1}/${link2}`;
+  return `Event: ${event}; GameId: ${gameId}, FrameId: ${frameId} (<a href="${url}" target="_blank">video link</a>)`;
+};
+
+/* 2. BUILD VIDEO OBJECTS */
+const videos = guideDirs.map(dir => {
+  // Determine if event is attacking or defending
+  const teamType = defguideDirs.includes(dir) ? 'defending' : 'attacking';
+
+  // Set color for "attacking" and "defending"
+  const teamColor = teamType === 'attacking' ? 'red' : 'blue';
+
+  // Generate the prompt with colored teamType
+  const promptText = `Which clip looks better for the <span style="color: ${teamColor};">${teamType}</span> team?<span class="asterisk">*</span>`;
+
+  return {
+    id: dir,
+    eventName: eventOf(dir),
+    genMp4: `videos/tarak/guide_${teamType}/${dir}/Generated.mp4`,
+    gtMp4: `videos/tarak/guide_${teamType}/${dir}/GroundTruth.mp4`,
+    genPdf: `videos/tarak/guide_${teamType}/${dir}/Generated.pdf`,
+    gtPdf: `videos/tarak/guide_${teamType}/${dir}/GroundTruth.pdf`,
+    promptText: promptText,
+    teamType: teamType,
+  };
+});
+
+/* 3. DETERMINISTIC SHUFFLE */
+function mulberry32(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed>>>15, 1 | seed); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
+const rng = mulberry32(666);
+function shuffle(a){ for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
+shuffle(videos);
+
+/* 4. INJECT PAGES */
+const container = document.getElementById('videoPagesContainer');
+videos.forEach((v, idx) => {
+  const leftIsGen = rng() < 0.5;               // true → Generated on left
+  v.leftIs      = leftIsGen;                  // ◀— record it!
+  v.leftLabel   = leftIsGen ? 'Generated'  : 'GroundTruth';
+  v.rightLabel  = leftIsGen ? 'GroundTruth' : 'Generated';
+
+  const leftPdf  = leftIsGen ? v.genPdf : v.gtPdf;
+  const leftMp4  = leftIsGen ? v.genMp4 : v.gtMp4;
+  const rightPdf = leftIsGen ? v.gtPdf  : v.genPdf;
+  const rightMp4 = leftIsGen ? v.gtMp4  : v.genMp4;
+
+  // Determine if event is attacking or defending
+  const teamType = defguideDirs.includes(v.id) ? 'defending' : 'attacking';
+
+  // Set color for "attacking" and "defending"
+  const teamColor = teamType === 'attacking' ? 'red' : 'blue';
+
+  // Generate the prompt with colored teamType
+  const promptText = `Which clip of post-event player trajectories for the <span style="color: ${teamColor};">${teamType}</span> team is better?<span class="asterisk">*</span>`;
+
+  const page = document.createElement('div');
+  page.className = 'comparison-page';
+  page.id        = `page${idx+3}`;
+  page.style.display = 'none';
+  page.innerHTML = `
+  <div class="comparison-row">
+    <div class="feedback-inline">
+      <div class="feedback-prompt" style="font-size:1.5em;font-weight:500;text-align:center;">
+        ${promptText}
+      </div>
+      <div class="choices">
+        <label class="choice">
+          <input type="radio" name="q${idx}" value="Left"> Left
+        </label>
+        <label class="choice">
+          <input type="radio" name="q${idx}" value="Right"> Right
+        </label>
+        <label class="choice">
+          <input type="radio" name="q${idx}" value="Equal"> Equal
+          <span style="font-size:0.9em;color:#777;margin-left:4px;">(better not to choose)</span>
+        </label>
+        <span class="confidence-box">
+          Confidence: <input type="number" name="conf${idx}" min="0" max="100" placeholder="0-100">
+        </span>
+      </div>
+      <textarea name="comments${idx}" rows="3" placeholder="Your comments (optional)" style="width:100%;"></textarea>
+      <div class="event-name">${v.eventName}</div>
+    </div>
+      <div style="display:flex;gap:20px;justify-content:center;width:100%;">
+        <div class="media-col">
+          <video controls><source src="${leftMp4}" type="video/mp4"></video>
+        </div>
+        <div class="media-col">
+          <video controls><source src="${rightMp4}" type="video/mp4"></video>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(page);
+});
+
+/* 5. NAVIGATION */
+let currentPage = 1;
+const totalPages = videos.length + 2;
+const pageBox      = document.getElementById('page-number-input');
+const pageDisplay  = document.getElementById('page-display');
+const submitButton = document.getElementById('submit-btn');
+pageBox.max   = totalPages;
+pageBox.value = currentPage;
+pageDisplay.textContent = `Current Page: ${currentPage} / ${totalPages}`;
+document.getElementById('previous-btn').disabled = true;
+
+function showPage(n){
+  if(n < 1 || n > totalPages) return;
+  document.getElementById(`page${currentPage}`).style.display = 'none';
+  currentPage = n;
+  document.getElementById(`page${currentPage}`).style.display = 'block';
+  submitButton.style.display = currentPage >= 3 ? 'block' : 'none';
+  document.getElementById('previous-btn').disabled = (currentPage === 1);
+  document.getElementById('next-btn').disabled     = (currentPage === totalPages);
+  pageBox.value = currentPage;
+  pageDisplay.textContent = `Current Page: ${currentPage} / ${totalPages}`;
+}
+
+function changePage(step){ showPage(currentPage + step); }
+function goToPage(){
+  const n = parseInt(pageBox.value, 10);
+  if(Number.isInteger(n) && n >= 1 && n <= totalPages) showPage(n);
+  else { alert(`Enter a number between 1 and ${totalPages}.`); pageBox.value = currentPage; }
+}
+
+showPage(1);
+
+/* 6. SUBMIT */
+async function submitFeedback(){
+  const name = document.getElementById('userName').value.trim();
+  const affiliation = document.getElementById('affiliation').value.trim();
+  const position = document.getElementById('position').value.trim();
+  const expertise = document.getElementById('expertise').value.trim();
+  const comments = document.getElementById('comments').value.trim();
+  if(!(name && affiliation && position && expertise)){
+    alert('Please complete all required fields on page 1.');
+    showPage(1);
+    return;
+  }
+
+  const responses = {};
+  let answeredCount = 0;
+  videos.forEach((v, idx) => {
+    const ans  = document.querySelector(`input[name="q${idx}"]:checked`)?.value || null;
+    const conf = document.querySelector(`input[name="conf${idx}"]`)?.value.trim() || null;
+    const comm = document.querySelector(`textarea[name="comments${idx}"]`)?.value.trim() || null;
+    const key = `${v.id}_leftIs${v.leftLabel}_guide${v.teamType}`;
+    responses[key] = { answer: ans, confidence: conf, comment: comm };
+    if(ans !== null) answeredCount++;
+  });
+
+  if(answeredCount === 0){
+    alert('Please answer at least one video before submitting.');
+    return;
+  }
+
+  const rationale = await askRationale();
+  if(!rationale){
+    alert('Please provide your rationale.');
+    return;
+  }
+
+  const payload = {
+    name, affiliation, position, expertise, comments, rationale,
+    responses: JSON.stringify(responses)
+  };
+
+  try {
+    const resp = await fetch('https://tactgen-proxy.nwpujasonxu.workers.dev', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if(resp.ok){
+      alert(answeredCount === videos.length
+            ? 'Thanks! All your feedback has been successfully submitted.'
+            : `Thanks! Your feedback up to now has been submitted.\nPlease come back later to finish the remaining videos, starting from Page ${currentPage+1}.`);
+    } else {
+      console.error('Server error:', await resp.text());
+      alert('Submission failed, please try again.');
+    }
+  } catch(err){
+    console.error('Network error:', err);
+    alert('Network error, please try again.');
+  }
+}
+
+/* 7. RATIONALE DIALOG HELPERS */
+let pendingResolve;
+function openDialog(){ document.getElementById('rationaleDialog').style.display = 'flex'; }
+function closeDialog(ok){
+  if(!ok){ document.getElementById('rationaleDialog').style.display = 'none'; pendingResolve(null); return; }
+  const rationale = document.getElementById('rationaleText').value.trim();
+  document.getElementById('rationaleDialog').style.display = 'none';
+  pendingResolve(rationale);
+}
+function askRationale(){
+  return new Promise(res => { pendingResolve = res; openDialog(); });
+}
+</script>
+</body>
+</html>

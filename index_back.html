@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TacTGen – Feedback Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- ---------- BASIC STYLES ---------- -->
+  <style>
+    html { font-size: 18px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 15px 30px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .comparison-row { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
+    .video-item     { display:flex; justify-content:center; width:60%; }
+    .video-item video { width:100%; border:2px solid #ccc; border-radius:6px; }
+
+    .feedback-inline { display:flex; flex-direction:column; align-items:center; gap:10px; width:1000px; margin-bottom:5px; }
+    .feedback-inline .feedback-prompt { font-size:1.5em; font-weight:500; text-align:center; }
+    .feedback-inline .choices {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;  /* Align all items in the row */
+    }
+    .feedback-inline .choice  { font-size:1.2em; display:flex; align-items:center; }
+    .feedback-inline .choice input { transform:scale(1.3); margin-right:6px; }
+
+    /* Confidence input aligned with choices */
+    .confidence-box {
+      font-size: 1.1em;
+      display: inline-flex;   /* Make it inline to stay on the same line as radio buttons */
+      align-items: center;    /* Vertically center the input with text */
+      gap: 6px;               /* Space between label and input */
+    }
+
+    .confidence-box input {
+      width: 50px;
+      margin-left: 6px;
+    }
+
+    .event-name {
+      font-size: 1.6em;
+      margin-top: 6px;
+      margin-bottom: -6px;
+      font-weight: 500;
+    }
+
+    .nav-buttons { display:flex; gap:10px; margin-top:-5px; }
+    .nav-buttons button { padding:6px 15px; font-size:1.1em; background:#4caf50; color:#fff; border:none; border-radius:6px; cursor:pointer; transition:background .3s; }
+    .nav-buttons button:hover    { background:#45a049; }
+    .nav-buttons button:disabled { background:#ccc; cursor:not-allowed; }
+
+    #submit-btn { padding:5px 30px; font-size:1.5em; background:orangered; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-top:-5px; display:none; }
+    #submit-btn:hover { background:red; }
+
+    input[type=text] { width:100%; padding:10px; font-size:1.1em; border:1px solid #ccc; border-radius:4px; }
+    .asterisk { color:red; margin-left:2px; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ========== PAGE 1 – PERSONAL INFO ========== -->
+  <div class="comparison-page" id="page1">
+    <div class="comparison-row">
+      <div class="feedback-inline">
+        <div class="feedback-prompt" style="margin-bottom:20px;margin-top:20px;font-size:38px;">
+          Tell us a bit about yourself<span class="asterisk"> *</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:15px;width:100%;max-width:400px;margin-bottom:10px">
+          <input id="userName"     type="text" placeholder="Name*">
+          <input id="affiliation"  type="text" placeholder="Affiliation*">
+          <input id="position"     type="text" placeholder="Position*">
+          <input id="expertise"    type="text" placeholder="Experience or expertise in football*">
+          <input id="comments"     type="text" placeholder="Other comments">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PAGE 2 – DESCRIPTION ONLY ========== -->
+  <div class="comparison-page" id="page2" style="display:none;">
+    <!-- ======== TASK DESCRIPTION (place inside page2) ======== -->
+    <div class="task-description" style="max-width:800px;margin:0 auto;line-height:1.4;">
+      <h2 style="margin-top:0;">Task overview</h2>
+      <p>You will watch a set of short football videos. Each video follows the same pattern:</p>
+
+      <ol style="padding-left:1.2em;">
+        <li><strong>Event context (10 frames)</strong> – real tracking data showing the ball and all 22 players’ <span style="font-style:italic;">x / y</span> positions for the 10 frames immediately before the on-ball event (pass, clearance, ball-touch, etc.).</li>
+        <li><strong>Post-event segment (<em>N</em> frames)</strong> – after the event occurs, the video continues tracking the ball and all players until one of the following: the next on-ball action occurs, the tracking data ends, or the 64-frame limit is reached. The ball trajectory is always authentic; the 22 player trajectories may come from real tracking data or from AI-generated predictions.</li>
+        <li><strong>Freeze frame</strong> – the final frame is held for ~3 s to let you inspect the ending.</li>
+      </ol>
+
+      <h3 style="margin-bottom:0.3em;">Additional notes</h3>
+      <ul style="padding-left:1.2em;">
+        <li>The attacking team always moves <strong>left&nbsp;→&nbsp;right</strong>.</li>
+        <li><strong>Sampling rate:</strong> player tracking is captured at 10 Hz, and videos are rendered at 5 fps, so <em>1 s of video equals 0.5 s of real-world play</em>.</li>
+        <li>The <strong>ball trajectory is always real</strong>; only the post-event segment of <em>22 players</em> may be synthetic.</li>
+        <li>There are <strong>50 generated and 50 realistic clips</strong> shown in a random order (fixed seed). The post event movements are <strong>always</strong> completely real or completely generated, without mixing them.</li>
+        <li>We provide five realistic clips to get you familiar with the animations here: <a href="https://drive.google.com/drive/folders/1gh5ASZhNjMZCnbaJyELWEDJHBkwrJZKJ?usp=sharing" target="_blank">Google Drive Folder</a>.</li>
+      </ul>
+
+      <h3 style="margin-bottom:0.3em;">Your task</h3>
+      <p>For each video, decide whether the <strong>post-event player movements</strong> look <em>realistic</em> (authentic) or <em>generated</em> (AI-predicted). Keep in mind that the <strong>ball trajectory is always realistic</strong>.</p>
+      <h3 style="margin-bottom:0.3em;">PS</h3>
+      <li>You may submit your responses after completing at least one video. Clicking the Submit button will record all of your already selected answers to the server at once. For convenience, you might choose to submit your responses every 5 or 10 events.</li>
+      <li>If you'd like to take a break and continue later, you're also welcome to temporarily submit your progress. For example, if you complete and submit feedback for the first 10 videos, you can return later and resume directly from page 11.</li>
+      <li>When clicking the submit button, it will require you to provide some simple feedback during your annotation progress.</li>
+    </div>
+  </div>
+
+  <!-- ========== VIDEO PAGES INJECTED HERE ========== -->
+  <div id="videoPagesContainer"></div>
+
+  <!-- ---------- NAVIGATION ---------- -->
+  <div class="nav-buttons">
+    <button id="previous-btn" onclick="changePage(-1)">Last Page</button>
+    <button id="next-btn"     onclick="changePage(1)">Next Page</button>
+
+    <input id="page-number-input" type="number" style="width:80px" placeholder="Page #">
+    <button id="go-to-page-btn" onclick="goToPage()">Go</button>
+
+    <!-- live display -->
+    <span id="page-display" style="font-size:1.1em;font-weight:500;margin-left:8px;margin-top:5px;"></span>
+  </div>
+
+  <!-- ---------- SUBMIT ---------- -->
+  <button id="submit-btn" onclick="submitFeedback()">Submit Feedback</button>
+
+  <!-- ---------- RATIONALE DIALOG ---------- -->
+  <div id="rationaleDialog" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0008;z-index:1000;">
+    <div style="background:#fff;padding:24px 22px;width:90%;max-width:480px;border-radius:8px;box-shadow:0 4px 18px #0004;">
+      <h3 style="margin-top:0;">How did you make your decision?</h3>
+      <p style="font-size:0.95em;margin-bottom:8px;">
+      Please summarize the main cues you relied on to <strong>distinguish</strong> <em>generated</em> from <em>realistic</em> player movements in the clips you’ve watched so far, and tell us whether you found the task <strong>easy or challenging</strong>.
+      </p>
+      <textarea id="rationaleText" rows="6" style="width:100%;"></textarea>
+
+      <div style="margin-top:18px;text-align:right;">
+        <button onclick="closeDialog(false)" style="margin-right:8px;">Cancel</button>
+        <button onclick="closeDialog(true)" style="background:#4caf50;color:#fff;">OK</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ====================== CLIENT-SIDE SCRIPT ====================== -->
+<script>
+/* ---------------- 1. LIST ALL FOLDERS ---------------- */
+const gtDirs = [
+  "Ball touch_2128518_105064_43","Ball touch_2128618_56906_50","Ball touch_986533_1214727_43",
+  "Ball touch_986566_1308841_51","Blocked Pass_2123892_107_33","Blocked Pass_2128378_74563_40",
+  "Challenge_986530_1986523_38","Challenge_986562_1876764_36","Clearance_1059731_105771_64",
+  "Clearance_2128438_98876_46","Clearance_986530_2031431_38","Clearance_986546_1765116_41",
+  "Clearance_986553_1676393_54","Clearance_986559_1859953_40","Clearance_986565_1325975_43",
+  "Interception_1059712_6858_34","Interception_1059731_115956_42","Interception_2123892_55321_46",
+  "Interception_986531_1883957_32","Interception_986555_1780773_64","Pass_986528_1806899_53",
+  "Pass_986528_1811929_35","Pass_986528_1842887_39","Pass_986528_1843954_52","Pass_986528_1852334_64",
+  "Pass_986528_1859894_40","Pass_986528_1865367_39","Pass_986528_1904604_47","Pass_986528_1943866_37",
+  "Pass_986528_1956069_44","Pass_986529_1774140_54","Pass_986530_2008718_46","Pass_986531_1884385_47",
+  "Pass_986531_1991526_46","Pass_986531_2032929_50","Pass_986533_1234959_43","Pass_986533_1246052_48",
+  "Pass_986534_1405258_64","Pass_986540_1781405_61","Pass_986540_1816450_63","Pass_986542_1170572_64",
+  "Pass_986545_1521950_48","Pass_986555_1882608_44","Pass - Corner_2123907_123253_42",
+  "Pass - Corner_986531_2001561_32","Save_1059843_13576_46","Save_2128342_107143_48",
+  "Save_2128358_99031_56","Take On_1059794_42061_41","Take On_986544_1763801_36"
+];
+const genDirs = [
+  "Ball touch_2128347_12916_49","Ball touch_986532_1350508_40","Ball touch_986561_1892414_37",
+  "Clearance_1059731_105771_64","Clearance_1059731_135796_51","Clearance_986528_1837442_38",
+  "Clearance_986528_1934334_50","Clearance_986530_1981338_40","Clearance_986546_1820988_41",
+  "Interception_1059712_6858_34","Interception_1059787_48778_55","Interception_986540_1814223_33",
+  "Interception_986563_1765180_38","Pass_2123907_115794_55","Pass_2128318_45728_60",
+  "Pass_986528_1843954_52","Pass_986528_1865367_39","Pass_986528_1904604_47","Pass_986528_1928541_40",
+  "Pass_986528_1949879_55","Pass_986529_1830605_39","Pass_986530_1984196_40","Pass_986530_2008718_46",
+  "Pass_986531_1929915_51","Pass_986531_1962081_42","Pass_986531_1975016_42","Pass_986531_1991526_46",
+  "Pass_986531_2003089_47","Pass_986531_2027946_40","Pass_986531_2032929_50","Pass_986532_1412009_55",
+  "Pass_986533_1234959_43","Pass_986534_1323443_48","Pass_986534_1407413_45","Pass_986536_1670747_46",
+  "Pass_986538_1769077_51","Pass_986540_1781405_61","Pass_986540_1816450_63","Pass_986542_1170572_64",
+  "Pass_986546_1806631_55","Pass_986550_1830835_64","Pass_986555_1882608_44","Pass - Corner_1059774_97188_33",
+  "Pass - Corner_986530_1898288_33","Save_2128358_99031_56","Save_2128614_101374_45",
+  "Save_986530_2001841_41","Save_986564_1341368_41","Take On_1059794_42061_41","Take On_986544_1763801_36"
+];
+
+// Function to extract event name from file name
+function extractEventName(fileName) {
+  return fileName.split('_')[0]; // Extracts the event name before the first underscore
+}
+
+// Create video objects and inject them into the HTML
+const videos = [];
+gtDirs.forEach(dir => videos.push({src: `videos/gt/${dir}/GroundTruth.mp4`, id: `gt_${dir}`, eventName: extractEventName(dir)}));
+genDirs.forEach(dir => videos.push({src: `videos/generated/${dir}/generated.mp4`, id: `gen_${dir}`, eventName: extractEventName(dir)}));
+
+/* ------------- 3. SEEDED SHUFFLE --------------------- */
+/* deterministic PRNG (mulberry32) */
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(666);   // ← fixed seed
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(rng() * (i + 1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+}
+shuffle(videos);    // same order every load with this seed
+
+/* -------- 4. CREATE ONE “PAGE” PER VIDEO ------------ */
+const container = document.getElementById('videoPagesContainer');
+videos.forEach((v, idx) => {
+  const page = document.createElement('div');
+  page.className = 'comparison-page';
+  page.id        = `page${idx + 3}`;     // pages start at 3
+  page.style.display = 'none';
+  page.innerHTML = `
+    <div class="comparison-row">
+      <div class="feedback-inline">
+        <div class="feedback-prompt">
+          Are the post-event player movements generated or realistic?<span class="asterisk"> *</span>
+        </div>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="q${idx}" value="Generated">Generated</label>
+          <label class="choice"><input type="radio" name="q${idx}" value="Realistic">Realistic</label>
+
+          <!-- Confidence input placed inline with radio options -->
+          <span class="confidence-box">
+            Confidence:
+            <input type="number" name="conf${idx}" min="0" max="100" placeholder="0-100">
+          </span>
+        </div>
+
+        <!-- Comments input box, optional -->
+        <div class="feedback-inline">
+<!--          <div class="feedback-prompt" style="font-size:1.1em;">-->
+<!--            Additional Comments (optional)-->
+<!--          </div>-->
+          <textarea name="comments${idx}" rows="3" placeholder="Your comments here (optional)" style="width:100%;"></textarea>
+        </div>
+
+        <div class="event-name">Event: ${v.eventName}</div>
+      </div>
+      <div class="video-item">
+        <video controls><source src="${v.src}" type="video/mp4"></video>
+      </div>
+    </div>`;
+  document.getElementById('videoPagesContainer').appendChild(page);
+});
+
+/* ------- 5. NAVIGATION ------- */
+let currentPage = 1;
+const totalPages = videos.length + 2;   // 1-info, 2-description, rest = clips
+
+const pageBox      = document.getElementById('page-number-input');
+const pageDisplay  = document.getElementById('page-display');
+const submitButton = document.getElementById('submit-btn');
+
+pageBox.max   = totalPages;
+pageBox.value = currentPage;
+pageDisplay.textContent = `Current Page: ${currentPage} / ${totalPages}`;
+
+function showPage(n){
+  if(n < 1 || n > totalPages) return;
+
+  document.getElementById(`page${currentPage}`).style.display = 'none';
+  currentPage = n;
+  document.getElementById(`page${currentPage}`).style.display = 'block';
+
+  /* show submit from page 3 onward */
+  submitButton.style.display = currentPage >= 3 ? 'block' : 'none';
+
+  document.getElementById('previous-btn').disabled = currentPage === 1;
+  document.getElementById('next-btn').disabled     = currentPage === totalPages;
+
+  pageBox.value = currentPage;
+  pageDisplay.textContent = `Current Page: ${currentPage} / ${totalPages}`;
+}
+document.getElementById('previous-btn').disabled = true;
+function changePage(step){ showPage(currentPage + step); }
+function goToPage(){
+  const n = parseInt(pageBox.value, 10);
+  if(Number.isInteger(n) && n >= 1 && n <= totalPages){ showPage(n); }
+  else{ alert(`Enter a number between 1 and ${totalPages}.`); pageBox.value = currentPage; }
+}
+
+/* ---------------- 6. SUBMISSION --------------------- */
+async function submitFeedback() {
+  const name = document.getElementById('userName').value.trim();
+  const affiliation = document.getElementById('affiliation').value.trim();
+  const position = document.getElementById('position').value.trim();
+  const expertise = document.getElementById('expertise').value.trim();
+  const comments = document.getElementById('comments').value.trim();
+
+  if (!(name && affiliation && position && expertise)) {
+    alert('Please complete Name, Affiliation, Position, and Expertise (all required).');
+    showPage(1);
+    return;
+  }
+
+    // Collect answers, confidence, and comments
+    const responses = {};
+    let answeredCount = 0;
+
+    // Iterate over all videos and collect answers, confidence, and comments
+    videos.forEach((v, idx) => {
+      const ans = document.querySelector(`input[name="q${idx}"]:checked`)?.value || null;
+      const conf = document.querySelector(`input[name="conf${idx}"]`)?.value.trim() || null;
+      const comment = document.querySelector(`textarea[name="comments${idx}"]`)?.value.trim() || null;
+
+      // Ensure that if comment is not provided, it is treated as null
+      responses[v.id] = {
+        answer: ans || null,        // Store answer or null if not provided
+        confidence: conf || null,   // Store confidence or null if not provided
+        comment: comment || null    // Store comment or null if not provided
+      };
+
+      // Count answered questions (this is optional for tracking progress)
+      if (ans !== null) {
+        answeredCount++;
+      }
+    });
+
+  // Ensure at least one answer
+  if (answeredCount === 0) {
+    alert('Please answer at least one video before submitting.');
+    return;
+  }
+
+  const rationale = await askRationale();
+  if (!rationale) {
+    alert('Please provide your rationale for distinguishing between generated and realistic clips.');
+    return;
+  }
+
+  const payload = {
+    name, affiliation, position, expertise, comments, rationale,
+    responses: JSON.stringify(responses),
+  };
+
+  try {
+    const resp = await fetch('https://tactgen-proxy.nwpujasonxu.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (resp.ok) {
+      if (answeredCount === videos.length) {
+        alert('Thanks! All your feedback has been successfully submitted.');
+      } else {
+        alert(`Thanks! Your feedback up to now has been submitted.\nPlease come back later to finish the remaining videos, starting from Page ${currentPage + 1}.`);
+      }
+    } else {
+      const errorDetails = await resp.text();
+      console.error('Server error:', errorDetails);
+      alert(`Submission failed, please try again.`);
+    }
+  } catch (err) {
+    console.error('Network error:', err);
+    alert('Network error, please try again.');
+  }
+}
+
+/* ---------- Modal helpers (confidence removed) ---------- */
+function openDialog() {
+  document.getElementById('rationaleDialog').style.display = 'flex';
+}
+
+function closeDialog(ok) {
+  if (!ok) {
+    document.getElementById('rationaleDialog').style.display = 'none';
+    pendingResolve(null); // cancel
+    return;
+  }
+  const rationale = document.getElementById('rationaleText').value.trim();
+  document.getElementById('rationaleDialog').style.display = 'none';
+  pendingResolve(rationale);
+}
+
+let pendingResolve;
+function askRationale() {
+  return new Promise((res) => {
+    pendingResolve = res;
+    openDialog();
+  });
+}
+</script>
+</body>
+</html>
