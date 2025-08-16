@@ -1,0 +1,58 @@
+name: Send video-feedback email
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:        {description: Participant name,                        required: true,  type: string}
+      affiliation: {description: Affiliation,                             required: true,  type: string}
+      position:    {description: Job title / position,                    required: true,  type: string}
+      expertise:   {description: Experience / expertise in football,      required: true,  type: string}
+      comments:    {description: Other comments (optional),               required: false, type: string}
+      rationale:   {description: How the participant distinguished clips, required: true,  type: string}
+      responses:   {description: 'JSON map videoID→answer',               required: true,  type: string}
+      confidence:  {description: 'JSON map videoID→confidence',           required: false, type: string}  # Make confidence optional
+      video_comments: {description: 'JSON map videoID→comments',          required: false, type: string} # Optional comments for each video
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install jq
+        run: sudo apt-get -y update && sudo apt-get -y install jq
+
+      - name: Format mail body
+        id: fmt
+        run: |
+          {
+            printf 'A visitor has submitted the feedback as follows:\n\n'
+            printf 'Participant: %s\n'  "${{ inputs.name }}"
+            printf 'Affiliation: %s\n'  "${{ inputs.affiliation }}"
+            printf 'Position: %s\n'     "${{ inputs.position }}"
+            printf 'Expertise: %s\n'    "${{ inputs.expertise }}"
+            printf 'Comments: %s\n'     "${{ inputs.comments }}"
+            printf 'Rationale: %s\n'    "${{ inputs.rationale }}"
+
+            # Format responses, confidence, and comments
+            echo '${{ inputs.responses }}' \
+              | jq -r 'to_entries[] | "• \(.key) ⇒ Answer: \(.value.answer) - Confidence: \(.value.confidence // "null") - Comments: \(.value.comment // "null")"'  # Ensure confidence and comments are optional
+
+            printf '\n(Workflow run → https://github.com/%s/actions/runs/%s)\n' \
+                   "${{ github.repository }}" "${{ github.run_id }}"
+          } >mail.txt
+
+          echo 'body<<EOF'   >>"$GITHUB_OUTPUT"
+          cat  mail.txt      >>"$GITHUB_OUTPUT"
+          echo 'EOF'         >>"$GITHUB_OUTPUT"
+
+      - name: Send feedback mail
+        uses: dawidd6/action-send-mail@v6
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject:  "New TacTGen Feedback Received"
+          to:       "820144073@qq.com"
+          from:     "TacTGen Bot <${{ secrets.MAIL_USERNAME }}>"
+          body:     ${{ steps.fmt.outputs.body }}
