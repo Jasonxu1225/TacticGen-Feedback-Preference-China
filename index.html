@@ -156,9 +156,12 @@ const attguideDirs = [
   'Pass_2450488_130479_de19354a-7326-4e84-8d8f-d298f9067d9f_5306',
   'Ball touch_986569_1350468_46', 'Ball touch_2128618_56906_50', 'Clearance_986530_1981338_40',
   'Pass_986528_1816044_46', 'Pass_986528_1852334_64', 'Pass_986528_1904604_47',
-  'Pass_2128298_127866_52', 'Pass_2367817_36051_35', 'Pass_2367820_97446_37',
-  'Pass_2367823_44626_54', 'Pass_2367830_100868_45', 'Pass_2367840_134407_59',
-  'Pass_2367846_4351_55', 'Pass_2367846_104019_53'
+  'Pass_2128298_127866_52', 'Pass_2367817_36051_272f466b-3172-48da-8062-edac94eb82fc_1596.663375', 'Pass_2367820_97446_37',
+  'Pass_2367823_44626_45e480ff-c89c-454d-ac7b-a99524db8f98_1795.829125',
+  'Pass_2367830_100868_2e88d3ca-8d63-44eb-a90b-fb4c917933a1_4099.83975',
+  'Pass_2367840_134407_48fa7a95-ee2d-4734-8248-71430dc82294_5481.0145',
+  'Pass_2367846_4351_b5dd138b-ff05-47c1-8c52-4c227d11b825_302.90290625',
+  'Pass_2367846_104019_13f87ac4-0a60-4dd0-9724-fed058d9eff8_4398.5985'
 
 
 ];
@@ -184,21 +187,19 @@ const defguideDirs = [
   'Pass_2371026_123752_38071a03-270f-486b-9f9e-eaaeb2a13e44_5192.2255',
   'Pass_2450332_88136_121c6021-b618-4c17-8ea0-650292fd50a2_3601.668',
   'Ball touch_986530_1897165_39', 'Clearance_986553_1676393_54', 'Interception_986530_2019911_37',
-  'Pass_986528_1843954_52', 'Pass_986528_1904604_47', 'Pass_2367840_134407_59',
+  'Pass_986528_1843954_52', 'Pass_986528_1904604_47', 'Pass_2367840_134407_48fa7a95-ee2d-4734-8248-71430dc82294_5481.0145',
   'Tackle_2367821_10998_52', 'Take On_2367816_121522_51'
 ];
 
 const guideDirs = [...attguideDirs, ...defguideDirs];
 
-// const eventOf = f => {
-//   const [event, gameId, frameId, link1, link2] = f.split('_');
-//   const url = `https://epitome-staging.pff.com/en/film_room/${link1}/${link2}`;
-//   return `Event: ${event}; GameId: ${gameId}, FrameId: ${frameId} (<a href="${url}" target="_blank">video link</a>)`;
-// };
-
 const eventOf = f => {
-  const [event, gameId, frameId, _] = f.split('_');
-  return `Event: ${event}`;
+  const [event, gameId, frameId, link1, link2] = f.split('_');
+  if (!link2 || link2.toLowerCase() === "none") {
+    return `Event: ${event}`;
+  }
+  const url = `https://epitome-staging.pff.com/en/film_room/${link1}/${link2}`;
+  return `Event: ${event} (<a href="${url}" target="_blank">video link</a>)`;
 };
 
 /* 2. BUILD VIDEO OBJECTS */
